@@ -26,6 +26,8 @@
   --color-sidebar: #1e293b;
   --color-sidebar-hover: #334155;
   --color-sidebar-active: #3b82f6;
+  --color-surface: #ffffff;
+  --color-surface-secondary: #f8fafc;
 }
 
 /* Dark mode */
