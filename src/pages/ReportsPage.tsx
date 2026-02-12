@@ -4,11 +4,11 @@ import { StatCard } from '@/components/ui/Card';
 import { PageLoader } from '@/components/ui/Loading';
 import { formatCurrency, getMonthName, getStatusLabel } from '@/utils/helpers';
 import { dueService } from '@/services/dueService';
-import { paymentService } from '@/services/paymentService';
+import { incomeService } from '@/services/incomeService';
 import { expenseService } from '@/services/expenseService';
 import { generateFinancialSummaryPDF } from '@/services/pdfService';
 import { exportFinancialReport } from '@/services/exportService';
-import type { Due, Payment, Expense } from '@/types';
+import type { Due, Income, Expense } from '@/types';
 import Button from '@/components/ui/Button';
 import Select from '@/components/ui/Select';
 import {
@@ -24,20 +24,20 @@ export default function ReportsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [year, setYear] = useState(new Date().getFullYear());
   const [dues, setDues] = useState<Due[]>([]);
-  const [payments, setPayments] = useState<Payment[]>([]);
+  const [incomes, setIncomes] = useState<Income[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
 
   useEffect(() => {
     async function fetchData() {
       setIsLoading(true);
       try {
-        const [d, p, e] = await Promise.all([
+        const [d, inc, e] = await Promise.all([
           dueService.getAll(),
-          paymentService.getAll(),
+          incomeService.getAll(),
           expenseService.getAll(),
         ]);
         setDues(d);
-        setPayments(p);
+        setIncomes(inc);
         setExpenses(e);
       } catch {
         toast.error('Veriler yüklenemedi');
@@ -49,21 +49,21 @@ export default function ReportsPage() {
   }, []);
 
   const yearDues = dues.filter((d) => d.year === year);
-  const yearPayments = payments.filter((p) => new Date(p.paymentDate).getFullYear() === year);
+  const yearIncomes = incomes.filter((i) => new Date(i.incomeDate).getFullYear() === year);
   const yearExpenses = expenses.filter((e) => new Date(e.expenseDate).getFullYear() === year);
 
-  const totalIncome = yearPayments.reduce((sum, p) => sum + p.amount, 0);
+  const totalIncome = yearIncomes.reduce((sum, i) => sum + i.amount, 0);
   const totalExpense = yearExpenses.reduce((sum, e) => sum + e.amount, 0);
   const netBalance = totalIncome - totalExpense;
 
   // Monthly data
   const monthlyData = Array.from({ length: 12 }, (_, i) => {
     const month = i + 1;
-    const mPayments = yearPayments.filter((p) => new Date(p.paymentDate).getMonth() === i);
+    const mIncomes = yearIncomes.filter((inc) => new Date(inc.incomeDate).getMonth() === i);
     const mExpenses = yearExpenses.filter((e) => new Date(e.expenseDate).getMonth() === i);
     return {
       month: getMonthName(month).slice(0, 3),
-      gelir: mPayments.reduce((sum, p) => sum + p.amount, 0),
+      gelir: mIncomes.reduce((sum, inc) => sum + inc.amount, 0),
       gider: mExpenses.reduce((sum, e) => sum + e.amount, 0),
     };
   });
@@ -89,7 +89,7 @@ export default function ReportsPage() {
   };
 
   const handleExportExcel = () => {
-    exportFinancialReport(yearDues, yearPayments, yearExpenses, year);
+    exportFinancialReport(yearDues, yearIncomes, yearExpenses, year);
     toast.success('Excel raporu indirildi');
   };
 

@@ -142,11 +142,30 @@ export default function DuesPage() {
             payer: resident ? `${resident.firstName} ${resident.lastName}` : (flat?.flatNumber ? `Daire ${flat.flatNumber}` : ''),
             incomeDate: new Date().toISOString().split('T')[0],
           },
-          admin.id
+          admin.id,
+          { dueId: due.id }
         );
       }
 
       toast.success('Aidat ödendi olarak işaretlendi');
+      fetchDues();
+    } catch {
+      toast.error('İşlem başarısız');
+    }
+  };
+
+  const handleMarkUnpaid = async (dueId: string) => {
+    if (!admin) return;
+    try {
+      await dueService.markAsUnpaid(dueId, admin.id);
+
+      // İlgili gelir kaydını sil
+      const linkedIncome = await incomeService.getByDueId(dueId);
+      if (linkedIncome) {
+        await incomeService.delete(linkedIncome.id, admin.id, linkedIncome.description);
+      }
+
+      toast.success('Aidat ödenmemiş olarak geri alındı');
       fetchDues();
     } catch {
       toast.error('İşlem başarısız');
@@ -474,12 +493,19 @@ export default function DuesPage() {
                             >
                               {getStatusText(status)}
                             </span>
-                            {status !== 'paid' && (
+                            {status !== 'paid' ? (
                               <button
                                 onClick={() => handleMarkPaid(due.id)}
                                 className="text-xs bg-emerald-600 text-white px-2 py-0.5 rounded hover:bg-emerald-700 transition-colors"
                               >
                                 Ödendi
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => handleMarkUnpaid(due.id)}
+                                className="text-xs bg-amber-500 text-white px-2 py-0.5 rounded hover:bg-amber-600 transition-colors"
+                              >
+                                Geri Al
                               </button>
                             )}
                           </div>
@@ -585,13 +611,20 @@ export default function DuesPage() {
                             <span className="text-xs text-gray-400">—</span>
                           )}
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3 space-x-2">
                           {due && due.status !== 'paid' ? (
                             <button
                               onClick={() => handleMarkPaid(due.id)}
                               className="text-xs bg-emerald-600 text-white px-3 py-1 rounded hover:bg-emerald-700 transition-colors"
                             >
                               Ödendi İşaretle
+                            </button>
+                          ) : due && due.status === 'paid' ? (
+                            <button
+                              onClick={() => handleMarkUnpaid(due.id)}
+                              className="text-xs bg-amber-500 text-white px-3 py-1 rounded hover:bg-amber-600 transition-colors"
+                            >
+                              Geri Al
                             </button>
                           ) : null}
                         </td>

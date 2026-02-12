@@ -1,5 +1,5 @@
 import * as XLSX from 'xlsx';
-import type { Due, Payment, Expense, AuditLog } from '@/types';
+import type { Due, Payment, Expense, AuditLog, Income } from '@/types';
 import { formatCurrency, formatDate, getStatusLabel, getMonthName } from '@/utils/helpers';
 
 /**
@@ -118,7 +118,7 @@ export function exportLogsToExcel(logs: AuditLog[], filename?: string): void {
  */
 export function exportFinancialReport(
   dues: Due[],
-  payments: Payment[],
+  incomes: Income[],
   expenses: Expense[],
   year: number
 ): void {
@@ -137,16 +137,17 @@ export function exportFinancialReport(
   autoSizeColumns(dueSheet, dueData);
   XLSX.utils.book_append_sheet(workbook, dueSheet, 'Aidatlar');
 
-  // Payments sheet
-  const payData = payments.map((p) => ({
-    'Tarih': formatDate(p.paymentDate),
-    'Tutar': p.amount,
-    'Yöntem': getStatusLabel(p.paymentMethod),
-    'Makbuz': p.receiptNumber,
+  // Gelirler sheet
+  const incData = incomes.map((i) => ({
+    'Tarih': formatDate(i.incomeDate),
+    'Kategori': i.category,
+    'Tutar': i.amount,
+    'Ödemeyi Yapan': i.payer || '-',
+    'Açıklama': i.description,
   }));
-  const paySheet = XLSX.utils.json_to_sheet(payData);
-  autoSizeColumns(paySheet, payData);
-  XLSX.utils.book_append_sheet(workbook, paySheet, 'Ödemeler');
+  const incSheet = XLSX.utils.json_to_sheet(incData);
+  autoSizeColumns(incSheet, incData);
+  XLSX.utils.book_append_sheet(workbook, incSheet, 'Gelirler');
 
   // Expenses sheet
   const expData = expenses.map((e) => ({
@@ -161,7 +162,7 @@ export function exportFinancialReport(
   XLSX.utils.book_append_sheet(workbook, expSheet, 'Giderler');
 
   // Summary sheet
-  const totalIncome = payments.reduce((sum, p) => sum + p.amount, 0);
+  const totalIncome = incomes.reduce((sum, i) => sum + i.amount, 0);
   const totalExpense = expenses.reduce((sum, e) => sum + e.amount, 0);
   const summaryData = [
     { 'Özet': 'Toplam Gelir', 'Tutar': totalIncome },

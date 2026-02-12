@@ -13,9 +13,10 @@ import type { IncomeFormData } from '@/utils/validations';
 import { auditLogService } from './auditLogService';
 
 export const incomeService = {
-  async create(data: IncomeFormData, userId: string): Promise<string> {
+  async create(data: IncomeFormData, userId: string, extra?: { dueId?: string }): Promise<string> {
     const id = await createDocument<Record<string, unknown>>(COLLECTIONS.INCOMES, {
       ...data,
+      ...(extra?.dueId ? { dueId: extra.dueId } : {}),
       createdBy: userId,
     });
     await auditLogService.log({
@@ -70,5 +71,10 @@ export const incomeService = {
 
   async getById(id: string): Promise<Income | null> {
     return getDocument<Income>(COLLECTIONS.INCOMES, id);
+  },
+
+  async getByDueId(dueId: string): Promise<Income | null> {
+    const results = await getDocumentsByField<Income>(COLLECTIONS.INCOMES, 'dueId', dueId);
+    return results.length > 0 ? results[0] : null;
   },
 };

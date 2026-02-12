@@ -110,6 +110,20 @@ export const dueService = {
     });
   },
 
+  async markAsUnpaid(id: string, userId: string): Promise<void> {
+    await updateDocument(COLLECTIONS.DUES, id, {
+      status: 'pending',
+      paidAmount: 0,
+    });
+    await auditLogService.log({
+      userId,
+      action: 'update',
+      entityType: 'due',
+      entityId: id,
+      description: `Aidat ödenmemiş olarak geri alındı`,
+    });
+  },
+
   async applyLateFees(userId: string): Promise<number> {
     const now = new Date();
     const overdueDues = await getDocuments<Due>(COLLECTIONS.DUES, [

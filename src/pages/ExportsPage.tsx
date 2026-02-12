@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { dueService } from '@/services/dueService';
 import { paymentService } from '@/services/paymentService';
+import { incomeService } from '@/services/incomeService';
 import { expenseService } from '@/services/expenseService';
 import { auditLogService } from '@/services/auditLogService';
 import {
@@ -54,15 +55,15 @@ export default function ExportsPage() {
           break;
         }
         case 'financial': {
-          const [dues, payments, expenses] = await Promise.all([
+          const [dues, incomes, expenses] = await Promise.all([
             dueService.getAll(),
-            paymentService.getAll(),
+            incomeService.getAll(),
             expenseService.getAll(),
           ]);
           const yearDues = dues.filter((d) => d.year === exportYear);
-          const yearPayments = payments.filter((p) => new Date(p.paymentDate).getFullYear() === exportYear);
+          const yearIncomes = incomes.filter((i) => new Date(i.incomeDate).getFullYear() === exportYear);
           const yearExpenses = expenses.filter((e) => new Date(e.expenseDate).getFullYear() === exportYear);
-          exportFinancialReport(yearDues, yearPayments, yearExpenses, exportYear);
+          exportFinancialReport(yearDues, yearIncomes, yearExpenses, exportYear);
           break;
         }
       }

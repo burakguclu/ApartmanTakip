@@ -133,6 +133,7 @@ export interface Income {
   description: string;
   incomeDate: string;
   payer: string;
+  dueId?: string;
   createdAt: string;
   updatedAt: string;
   createdBy: string;
