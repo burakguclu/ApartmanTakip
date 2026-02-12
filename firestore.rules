@@ -83,12 +83,12 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // Audit Logs - read only for admins, created by system
+    // Audit Logs
     match /auditLogs/{docId} {
       allow read: if isAdmin();
       allow create: if isAdmin();
       allow update: if false;
-      allow delete: if false;
+      allow delete: if isAdmin();
     }
 
     // Notifications
@@ -96,7 +96,7 @@ service cloud.firestore {
       allow read: if isAdmin();
       allow create: if isAdmin();
       allow update: if isAdmin();
-      allow delete: if false;
+      allow delete: if isAdmin();
     }
 
     // Settings
