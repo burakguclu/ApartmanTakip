@@ -3,7 +3,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { dueService } from '@/services/dueService';
 import { incomeService } from '@/services/incomeService';
 import { apartmentService, blockService, flatService } from '@/services/apartmentService';
-import type { Due, Apartment, Block, Flat } from '@/types';
+import { residentService } from '@/services/residentService';
+import type { Due, Apartment, Block, Flat, Resident } from '@/types';
 import { useModal } from '@/hooks/useCommon';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -26,6 +27,7 @@ export default function DuesPage() {
   const [apartments, setApartments] = useState<Apartment[]>([]);
   const [blocks, setBlocks] = useState<Block[]>([]);
   const [flats, setFlats] = useState<Flat[]>([]);
+  const [residents, setResidents] = useState<Resident[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Filters
@@ -81,9 +83,11 @@ export default function DuesPage() {
     if (selectedApartmentId) {
       blockService.getByApartment(selectedApartmentId).then(setBlocks);
       flatService.getByApartment(selectedApartmentId).then(setFlats);
+      residentService.getByApartment(selectedApartmentId).then(setResidents);
     } else {
       setBlocks([]);
       setFlats([]);
+      setResidents([]);
     }
     setSelectedBlockId('');
   }, [selectedApartmentId]);
@@ -124,14 +128,18 @@ export default function DuesPage() {
       // Gelir kaydı oluştur
       if (due) {
         const flat = flats.find((f) => f.id === due.flatId);
+        const block = blocks.find((b) => b.id === due.blockId);
+        const resident = residents.find((r) => r.flatId === due.flatId && r.isActive);
         const totalPaid = due.amount + due.lateFee;
+        const blockLabel = block ? `${block.name} ` : '';
+        const residentLabel = resident ? ` - ${resident.firstName} ${resident.lastName}` : '';
         await incomeService.create(
           {
             apartmentId: due.apartmentId,
             category: 'dues',
             amount: totalPaid,
-            description: `Daire ${flat?.flatNumber ?? '?'} - ${getMonthName(due.month)} ${due.year} aidatı`,
-            payer: flat?.flatNumber ? `Daire ${flat.flatNumber}` : '',
+            description: `${blockLabel}Daire ${flat?.flatNumber ?? '?'}${residentLabel} - ${getMonthName(due.month)} ${due.year} aidatı`,
+            payer: resident ? `${resident.firstName} ${resident.lastName}` : (flat?.flatNumber ? `Daire ${flat.flatNumber}` : ''),
             incomeDate: new Date().toISOString().split('T')[0],
           },
           admin.id
@@ -421,17 +429,29 @@ export default function DuesPage() {
                 .map((flat) => {
                   const due = flatDueMap[flat.id];
                   const status = due?.status;
+                  const block = blocks.find((b) => b.id === flat.blockId);
+                  const resident = residents.find((r) => r.flatId === flat.id && r.isActive);
                   return (
                     <div
                       key={flat.id}
                       className={`relative border-2 rounded-xl p-3 transition-all hover:shadow-md ${getCardStyle(status)}`}
                     >
-                      <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center justify-between mb-1">
                         <span className="font-bold text-sm text-gray-900 dark:text-white">
                           Daire {flat.flatNumber}
                         </span>
                         {getStatusIcon(status)}
                       </div>
+                      {block && (
+                        <div className="text-xs text-gray-400 dark:text-gray-500 mb-0.5">
+                          {block.name}
+                        </div>
+                      )}
+                      {resident && (
+                        <div className="text-xs font-medium text-gray-600 dark:text-gray-300 mb-1 truncate" title={`${resident.firstName} ${resident.lastName}`}>
+                          {resident.firstName} {resident.lastName}
+                        </div>
+                      )}
                       <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
                         Kat: {flat.floor}
                       </div>
@@ -490,7 +510,10 @@ export default function DuesPage() {
                   Daire
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
-                  Kat
+                  Blok
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
+                  Sakin
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                   Tutar
@@ -513,7 +536,7 @@ export default function DuesPage() {
               {filteredFlats.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={8}
                     className="px-4 py-12 text-center text-gray-500"
                   >
                     Daire bulunamadı
@@ -528,6 +551,8 @@ export default function DuesPage() {
                   )
                   .map((flat) => {
                     const due = flatDueMap[flat.id];
+                    const block = blocks.find((b) => b.id === flat.blockId);
+                    const resident = residents.find((r) => r.flatId === flat.id && r.isActive);
                     return (
                       <tr
                         key={flat.id}
@@ -537,7 +562,10 @@ export default function DuesPage() {
                           Daire {flat.flatNumber}
                         </td>
                         <td className="px-4 py-3 text-gray-500 dark:text-gray-400">
-                          Kat {flat.floor}
+                          {block?.name ?? '-'}
+                        </td>
+                        <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
+                          {resident ? `${resident.firstName} ${resident.lastName}` : '-'}
                         </td>
                         <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
                           {due ? formatCurrency(due.amount) : '-'}
