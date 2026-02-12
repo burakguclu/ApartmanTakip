@@ -75,6 +75,14 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // Incomes
+    match /incomes/{docId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
     // Audit Logs - read only for admins, created by system
     match /auditLogs/{docId} {
       allow read: if isAdmin();

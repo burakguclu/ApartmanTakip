@@ -78,6 +78,12 @@ export default function ApartmentsPage() {
   const fetchFlats = useCallback(async (blockId: string) => {
     try {
       const data = await flatService.getByBlock(blockId);
+      data.sort((a, b) => {
+        const numA = parseInt(a.flatNumber, 10);
+        const numB = parseInt(b.flatNumber, 10);
+        if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+        return a.flatNumber.localeCompare(b.flatNumber, 'tr');
+      });
       setFlats(data);
     } catch {
       toast.error('Daireler yüklenemedi');
@@ -218,9 +224,10 @@ export default function ApartmentsPage() {
     setQuickAddIsCreating(true);
     try {
       let count = 0;
+      let flatCounter = 1;
       for (let floor = 1; floor <= quickAddFloors; floor++) {
         for (let flat = 1; flat <= quickAddFlatsPerFloor; flat++) {
-          const flatNumber = String(floor * 100 + flat);
+          const flatNumber = String(flatCounter);
           await flatService.create(
             selectedApartment.id,
             selectedBlock.id,
@@ -233,6 +240,7 @@ export default function ApartmentsPage() {
             admin.id
           );
           count++;
+          flatCounter++;
         }
       }
       toast.success(`${count} daire oluşturuldu`);
@@ -466,7 +474,7 @@ export default function ApartmentsPage() {
           <p className="text-sm text-gray-600 dark:text-gray-400">
             Kat ve daire sayısını belirleyin, daireler otomatik numaralandırılacak.
             <br />
-            <span className="text-xs text-gray-400">Örnek: 3. kat, katta 4 daire → 301, 302, 303, 304</span>
+            <span className="text-xs text-gray-400">Örnek: 3 kat, katta 4 daire → 1, 2, 3, ... 12</span>
           </p>
           <Input
             label="Kat Sayısı"
@@ -486,7 +494,7 @@ export default function ApartmentsPage() {
           />
           <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 text-sm text-gray-600 dark:text-gray-400">
             <p><strong>Toplam:</strong> {quickAddFloors * quickAddFlatsPerFloor} daire</p>
-            <p><strong>Numaralama:</strong> 101-{quickAddFloors * 100 + quickAddFlatsPerFloor}</p>
+            <p><strong>Numaralama:</strong> 1-{quickAddFloors * quickAddFlatsPerFloor}</p>
           </div>
           <div className="flex justify-end gap-3 pt-4">
             <Button type="button" variant="secondary" onClick={() => setQuickAddOpen(false)}>İptal</Button>
