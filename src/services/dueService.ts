@@ -6,7 +6,7 @@ import {
   getDocumentsByField,
   batchCreateDocuments,
 } from './firestoreService';
-import { where, orderBy } from 'firebase/firestore';
+import { where } from 'firebase/firestore';
 import { COLLECTIONS, DEFAULT_DUE_DAY } from '@/utils/constants';
 import type { Due, Flat } from '@/types';
 import type { DueFormData, BulkDueFormData } from '@/utils/validations';
@@ -46,10 +46,12 @@ export const dueService = {
       flats = await flatService.getByApartment(data.apartmentId);
     }
 
-    const occupiedFlats = flats.filter((f) => f.occupancyStatus === 'occupied');
+    if (flats.length === 0) {
+      return [];
+    }
     const dueDate = `${data.year}-${String(data.month).padStart(2, '0')}-${String(DEFAULT_DUE_DAY).padStart(2, '0')}`;
 
-    const dueItems = occupiedFlats.map((flat) => ({
+    const dueItems = flats.map((flat) => ({
       apartmentId: data.apartmentId,
       blockId: flat.blockId,
       flatId: flat.id,
@@ -144,7 +146,7 @@ export const dueService = {
   },
 
   async getAll(): Promise<Due[]> {
-    return getDocuments<Due>(COLLECTIONS.DUES, [orderBy('year', 'desc'), orderBy('month', 'desc')]);
+    return getDocuments<Due>(COLLECTIONS.DUES);
   },
 
   async getByFlat(flatId: string): Promise<Due[]> {

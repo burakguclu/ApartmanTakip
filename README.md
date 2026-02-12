@@ -5,6 +5,7 @@ Apartman aidatları, sakinler, ödemeler, giderler ve finansal raporlama için k
 ## Özellikler
 
 ### Temel Modüller
+
 - **Dashboard** - Finansal özet, grafikler, gecikmiş aidatlar
 - **Apartman Yönetimi** - Apartman, blok ve daire CRUD
 - **Sakin Yönetimi** - Sakin kayıt, taşınma, TC/telefon doğrulama
@@ -18,6 +19,7 @@ Apartman aidatları, sakinler, ödemeler, giderler ve finansal raporlama için k
 - **Ayarlar** - Kullanıcı profili, tema tercihi
 
 ### Teknik Özellikler
+
 - React 18+ / TypeScript (Strict mode)
 - Firebase Authentication & Firestore
 - TailwindCSS v4 (Dark mode)
@@ -32,15 +34,18 @@ Apartman aidatları, sakinler, ödemeler, giderler ve finansal raporlama için k
 ## Kurulum
 
 ### Gereksinimler
+
 - Node.js 18+
 - Firebase projesi
 
 ### 1. Bağımlılıkları Yükle
+
 ```bash
 npm install
 ```
 
 ### 2. Firebase Yapılandırması
+
 `.env` dosyası oluşturun (`.env.example` şablonuna bakın):
 
 ```env
@@ -53,7 +58,9 @@ VITE_FIREBASE_APP_ID=your-app-id
 ```
 
 ### 3. Firebase Admin Kullanıcı Oluşturma
+
 Firestore Console'da `admins` koleksiyonuna bir döküman ekleyin:
+
 ```json
 {
   "email": "admin@example.com",
@@ -63,20 +70,25 @@ Firestore Console'da `admins` koleksiyonuna bir döküman ekleyin:
   "createdAt": "2024-01-01T00:00:00.000Z"
 }
 ```
+
 Döküman ID'si = Firebase Auth'daki kullanıcı UID olmalıdır.
 
 ### 4. Geliştirme Sunucusu
+
 ```bash
 npm run dev
 ```
+
 http://localhost:3000 adresinde açılır.
 
 ### 5. Production Build
+
 ```bash
 npm run build
 ```
 
 ### 6. Firebase Deploy
+
 ```bash
 npm install -g firebase-tools
 firebase login
@@ -136,6 +148,7 @@ src/
 ```
 
 ## Güvenlik
+
 - Tüm rotalar `ProtectedRoute` ile korumalı
 - Firestore Security Rules ile backend koruması
 - Admin kullanıcı doğrulama (Auth + Firestore `admins` koleksiyonu)
@@ -143,4 +156,5 @@ src/
 - Audit log ile tam izlenebilirlik
 
 ## Lisans
+
 MIT
