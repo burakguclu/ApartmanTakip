@@ -83,8 +83,8 @@ export default function ReportsPage() {
   const totalPaidAmount = yearDues.reduce((sum, d) => sum + d.paidAmount, 0);
   const collectionRate = totalDueAmount > 0 ? ((totalPaidAmount / totalDueAmount) * 100).toFixed(1) : '0';
 
-  const handleExportPDF = () => {
-    generateFinancialSummaryPDF(yearDues, totalIncome, totalExpense, `${year}`);
+  const handleExportPDF = async () => {
+    await generateFinancialSummaryPDF(yearDues, totalIncome, totalExpense, `${year}`);
     toast.success('PDF raporu indirildi');
   };
 

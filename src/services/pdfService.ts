@@ -3,15 +3,39 @@ import autoTable from 'jspdf-autotable';
 import type { Payment, Due } from '@/types';
 import { formatCurrency, formatDate, getStatusLabel, getMonthName } from '@/utils/helpers';
 
+// Cache for loaded font base64
+let cachedFontBase64: string | null = null;
+
+/**
+ * Load Roboto font that supports Turkish characters
+ */
+async function loadTurkishFont(doc: jsPDF): Promise<void> {
+  try {
+    if (!cachedFontBase64) {
+      const response = await fetch('/fonts/Roboto-Regular.ttf');
+      const buffer = await response.arrayBuffer();
+      cachedFontBase64 = btoa(
+        new Uint8Array(buffer).reduce((data, byte) => data + String.fromCharCode(byte), '')
+      );
+    }
+    doc.addFileToVFS('Roboto-Regular.ttf', cachedFontBase64);
+    doc.addFont('Roboto-Regular.ttf', 'Roboto', 'normal');
+    doc.setFont('Roboto');
+  } catch {
+    console.warn('Roboto font yüklenemedi, varsayılan font kullanılacak');
+  }
+}
+
 /**
  * Generate payment receipt PDF
  */
-export function generateReceiptPDF(payment: Payment, flatNumber: string, residentName: string): void {
+export async function generateReceiptPDF(payment: Payment, flatNumber: string, residentName: string): Promise<void> {
   const doc = new jsPDF();
+  await loadTurkishFont(doc);
 
   // Header
   doc.setFontSize(20);
-  doc.text('ODEME MAKBUZU', 105, 20, { align: 'center' });
+  doc.text('ÖDEME MAKBUZU', 105, 20, { align: 'center' });
 
   doc.setFontSize(10);
   doc.text(`Makbuz No: ${payment.receiptNumber}`, 105, 30, { align: 'center' });
@@ -33,11 +57,11 @@ export function generateReceiptPDF(payment: Payment, flatNumber: string, residen
   doc.text(residentName, 80, y);
   y += 10;
 
-  doc.text('Odeme Tutari:', 25, y);
+  doc.text('Ödeme Tutarı:', 25, y);
   doc.text(formatCurrency(payment.amount), 80, y);
   y += 10;
 
-  doc.text('Odeme Yontemi:', 25, y);
+  doc.text('Ödeme Yöntemi:', 25, y);
   doc.text(getStatusLabel(payment.paymentMethod), 80, y);
   y += 10;
 
@@ -48,7 +72,7 @@ export function generateReceiptPDF(payment: Payment, flatNumber: string, residen
   }
 
   if (payment.description) {
-    doc.text('Aciklama:', 25, y);
+    doc.text('Açıklama:', 25, y);
     doc.text(payment.description, 80, y);
     y += 10;
   }
@@ -61,8 +85,8 @@ export function generateReceiptPDF(payment: Payment, flatNumber: string, residen
   // Footer
   y += 15;
   doc.setFontSize(10);
-  doc.text('Bu makbuz elektronik olarak olusturulmustur.', 105, y, { align: 'center' });
-  doc.text(`Olusturulma: ${new Date().toLocaleString('tr-TR')}`, 105, y + 7, { align: 'center' });
+  doc.text('Bu makbuz elektronik olarak oluşturulmuştur.', 105, y, { align: 'center' });
+  doc.text(`Oluşturulma: ${new Date().toLocaleString('tr-TR')}`, 105, y + 7, { align: 'center' });
 
   doc.save(`makbuz_${payment.receiptNumber}.pdf`);
 }
@@ -70,20 +94,23 @@ export function generateReceiptPDF(payment: Payment, flatNumber: string, residen
 /**
  * Generate financial summary PDF
  */
-export function generateFinancialSummaryPDF(
+export async function generateFinancialSummaryPDF(
   dues: Due[],
   totalIncome: number,
   totalExpense: number,
   period: string
-): void {
+): Promise<void> {
   const doc = new jsPDF();
+  await loadTurkishFont(doc);
 
   // Header
   doc.setFontSize(18);
-  doc.text('FINANSAL OZET RAPORU', 105, 20, { align: 'center' });
+  doc.text('FİNANSAL ÖZET RAPORU', 105, 20, { align: 'center' });
   doc.setFontSize(11);
-  doc.text(`Donem: ${period}`, 105, 28, { align: 'center' });
-  doc.text(`Olusturulma: ${new Date().toLocaleString('tr-TR')}`, 105, 34, { align: 'center' });
+  doc.text(`Dönem: ${period}`, 105, 28, { align: 'center' });
+  doc.text(`Oluşturulma: ${new Date().toLocaleString('tr-TR')}`, 105, 34, { align: 'center' });
+
+  const fontName = 'Roboto';
 
   // Summary Table
   autoTable(doc, {
@@ -95,7 +122,8 @@ export function generateFinancialSummaryPDF(
       ['Net Bakiye', formatCurrency(totalIncome - totalExpense)],
     ],
     theme: 'grid',
-    headStyles: { fillColor: [37, 99, 235] },
+    headStyles: { fillColor: [37, 99, 235], font: fontName },
+    bodyStyles: { font: fontName },
   });
 
   // Dues detail table
@@ -103,11 +131,11 @@ export function generateFinancialSummaryPDF(
     const currentY = (doc as jsPDF & { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? 80;
 
     doc.setFontSize(14);
-    doc.text('Aidat Detaylari', 14, currentY + 15);
+    doc.text('Aidat Detayları', 14, currentY + 15);
 
     autoTable(doc, {
       startY: currentY + 20,
-      head: [['Ay', 'Tutar', 'Odenen', 'Durum']],
+      head: [['Ay', 'Tutar', 'Ödenen', 'Durum']],
       body: dues.map((due) => [
         `${getMonthName(due.month)} ${due.year}`,
         formatCurrency(due.amount),
@@ -115,7 +143,8 @@ export function generateFinancialSummaryPDF(
         getStatusLabel(due.status),
       ]),
       theme: 'striped',
-      headStyles: { fillColor: [37, 99, 235] },
+      headStyles: { fillColor: [37, 99, 235], font: fontName },
+      bodyStyles: { font: fontName },
     });
   }
 

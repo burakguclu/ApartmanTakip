@@ -10,7 +10,7 @@ const DashboardPage = lazy(() => import('@/pages/DashboardPage'));
 const ApartmentsPage = lazy(() => import('@/pages/ApartmentsPage'));
 const ResidentsPage = lazy(() => import('@/pages/ResidentsPage'));
 const DuesPage = lazy(() => import('@/pages/DuesPage'));
-const PaymentsPage = lazy(() => import('@/pages/PaymentsPage'));
+const PaymentsPage = lazy(() => import('@/pages/IncomesPage'));
 const ExpensesPage = lazy(() => import('@/pages/ExpensesPage'));
 const ReportsPage = lazy(() => import('@/pages/ReportsPage'));
 const ExportsPage = lazy(() => import('@/pages/ExportsPage'));
@@ -32,7 +32,7 @@ function App() {
             <Route path="/apartments" element={<ApartmentsPage />} />
             <Route path="/residents" element={<ResidentsPage />} />
             <Route path="/dues" element={<DuesPage />} />
-            <Route path="/payments" element={<PaymentsPage />} />
+            <Route path="/incomes" element={<PaymentsPage />} />
             <Route path="/expenses" element={<ExpensesPage />} />
             <Route path="/reports" element={<ReportsPage />} />
             <Route path="/exports" element={<ExportsPage />} />

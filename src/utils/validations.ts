@@ -36,7 +36,6 @@ export type BlockFormData = z.infer<typeof blockSchema>;
 export const flatSchema = z.object({
   flatNumber: z.string().min(1, 'Daire numarası girin'),
   floor: z.number().min(-5, 'Geçerli kat girin').max(100, 'Geçerli kat girin'),
-  squareMeters: z.number().min(10, 'En az 10 m²').max(1000, 'En fazla 1000 m²'),
   type: z.enum(['residential', 'commercial', 'office']),
   occupancyStatus: z.enum(['occupied', 'vacant', 'under-renovation']),
 });
@@ -89,6 +88,19 @@ export const bulkDueSchema = z.object({
   description: z.string(),
 });
 export type BulkDueFormData = z.infer<typeof bulkDueSchema>;
+
+// ==========================================
+// Income Schema
+// ==========================================
+export const incomeSchema = z.object({
+  apartmentId: z.string().min(1, 'Apartman seçin'),
+  category: z.enum(['rent', 'parking', 'advertising', 'event', 'interest', 'other']),
+  amount: z.number().min(0.01, 'Tutar 0\'dan büyük olmalıdır'),
+  description: z.string().min(3, 'Açıklama en az 3 karakter olmalıdır'),
+  payer: z.string(),
+  incomeDate: z.string().min(1, 'Gelir tarihi girin'),
+});
+export type IncomeFormData = z.infer<typeof incomeSchema>;
 
 // ==========================================
 // Payment Schema

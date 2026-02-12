@@ -6,6 +6,7 @@ export const COLLECTIONS = {
   DUES: 'dues',
   PAYMENTS: 'payments',
   EXPENSES: 'expenses',
+  INCOMES: 'incomes',
   ADMINS: 'admins',
   AUDIT_LOGS: 'auditLogs',
   NOTIFICATIONS: 'notifications',
@@ -60,6 +61,15 @@ export const MONTHS = [
   { value: 10, label: 'Ekim' },
   { value: 11, label: 'Kasım' },
   { value: 12, label: 'Aralık' },
+] as const;
+
+export const INCOME_CATEGORIES = [
+  { value: 'rent', label: 'Kira Geliri' },
+  { value: 'parking', label: 'Otopark' },
+  { value: 'advertising', label: 'Reklam Geliri' },
+  { value: 'event', label: 'Etkinlik Geliri' },
+  { value: 'interest', label: 'Faiz Geliri' },
+  { value: 'other', label: 'Diğer' },
 ] as const;
 
 export const PAGE_SIZES = [10, 25, 50, 100] as const;

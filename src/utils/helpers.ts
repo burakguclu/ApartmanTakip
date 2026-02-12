@@ -152,6 +152,11 @@ export function getStatusColor(status: string): string {
     rejected: 'bg-danger-50 text-danger-700',
     active: 'bg-success-50 text-success-700',
     inactive: 'bg-gray-100 text-gray-600',
+    rent: 'bg-emerald-50 text-emerald-700',
+    parking: 'bg-blue-50 text-blue-700',
+    advertising: 'bg-purple-50 text-purple-700',
+    event: 'bg-pink-50 text-pink-700',
+    interest: 'bg-indigo-50 text-indigo-700',
   };
   return colors[status] || 'bg-gray-100 text-gray-600';
 }
@@ -172,6 +177,11 @@ export function getStatusLabel(status: string): string {
     rejected: 'Reddedildi',
     active: 'Aktif',
     inactive: 'Pasif',
+    rent: 'Kira Geliri',
+    parking: 'Otopark',
+    advertising: 'Reklam Geliri',
+    event: 'Etkinlik Geliri',
+    interest: 'Faiz Geliri',
     owner: 'Mal Sahibi',
     tenant: 'Kiracı',
     cash: 'Nakit',

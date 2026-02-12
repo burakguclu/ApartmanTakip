@@ -88,8 +88,8 @@ export default function PaymentsPage() {
     }
   };
 
-  const handleDownloadReceipt = (payment: Payment) => {
-    generateReceiptPDF(payment, payment.flatId, payment.residentId);
+  const handleDownloadReceipt = async (payment: Payment) => {
+    await generateReceiptPDF(payment, payment.flatId, payment.residentId);
     toast.success('Makbuz indirildi');
   };
 

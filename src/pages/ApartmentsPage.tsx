@@ -16,7 +16,7 @@ import Badge from '@/components/ui/Badge';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import DataTable, { type ColumnDef } from '@/components/ui/DataTable';
 import { PageLoader } from '@/components/ui/Loading';
-import { Plus, Building2, Edit, Trash2, ChevronRight, Home } from 'lucide-react';
+import { Plus, Building2, Edit, Trash2, ChevronRight, Home, Zap } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function ApartmentsPage() {
@@ -28,6 +28,10 @@ export default function ApartmentsPage() {
   const [flats, setFlats] = useState<Flat[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState<{ type: string; id: string; name: string } | null>(null);
+  const [quickAddOpen, setQuickAddOpen] = useState(false);
+  const [quickAddFloors, setQuickAddFloors] = useState(5);
+  const [quickAddFlatsPerFloor, setQuickAddFlatsPerFloor] = useState(4);
+  const [quickAddIsCreating, setQuickAddIsCreating] = useState(false);
 
   const apartmentModal = useModal();
   const blockModal = useModal();
@@ -172,7 +176,6 @@ export default function ApartmentsPage() {
     flatForm.reset({
       flatNumber: flat.flatNumber,
       floor: flat.floor,
-      squareMeters: flat.squareMeters,
       type: flat.type,
       occupancyStatus: flat.occupancyStatus,
     });
@@ -209,6 +212,39 @@ export default function ApartmentsPage() {
     setDeleteTarget(null);
   };
 
+  // Quick add flats
+  const handleQuickAddFlats = async () => {
+    if (!admin || !selectedApartment || !selectedBlock) return;
+    setQuickAddIsCreating(true);
+    try {
+      let count = 0;
+      for (let floor = 1; floor <= quickAddFloors; floor++) {
+        for (let flat = 1; flat <= quickAddFlatsPerFloor; flat++) {
+          const flatNumber = String(floor * 100 + flat);
+          await flatService.create(
+            selectedApartment.id,
+            selectedBlock.id,
+            {
+              flatNumber,
+              floor,
+              type: 'residential',
+              occupancyStatus: 'vacant',
+            },
+            admin.id
+          );
+          count++;
+        }
+      }
+      toast.success(`${count} daire oluşturuldu`);
+      setQuickAddOpen(false);
+      fetchFlats(selectedBlock.id);
+    } catch {
+      toast.error('Daire oluşturma başarısız');
+    } finally {
+      setQuickAddIsCreating(false);
+    }
+  };
+
   // Filter apartments by search
   const filteredApartments = apartments.filter(
     (a) =>
@@ -220,7 +256,6 @@ export default function ApartmentsPage() {
   const flatColumns: ColumnDef<Flat>[] = [
     { key: 'flatNumber', title: 'Daire No', render: (f) => <span className="font-medium">{f.flatNumber}</span> },
     { key: 'floor', title: 'Kat', render: (f) => f.floor },
-    { key: 'sqm', title: 'm²', render: (f) => f.squareMeters },
     { key: 'status', title: 'Durum', render: (f) => <Badge status={f.occupancyStatus} /> },
     {
       key: 'actions',
@@ -264,9 +299,14 @@ export default function ApartmentsPage() {
         </div>
         <div className="flex gap-2">
           {selectedBlock && (
-            <Button onClick={() => { flatForm.reset({ type: 'residential', occupancyStatus: 'vacant', flatNumber: '', floor: 0, squareMeters: 0 }); flatModal.openCreate(); }} leftIcon={<Home className="h-4 w-4" />}>
-              Daire Ekle
-            </Button>
+            <>
+              <Button variant="secondary" onClick={() => { setQuickAddFloors(5); setQuickAddFlatsPerFloor(4); setQuickAddOpen(true); }} leftIcon={<Zap className="h-4 w-4" />}>
+                Hızlı Ekle
+              </Button>
+              <Button onClick={() => { flatForm.reset({ type: 'residential', occupancyStatus: 'vacant', flatNumber: '', floor: 0 }); flatModal.openCreate(); }} leftIcon={<Home className="h-4 w-4" />}>
+                Daire Ekle
+              </Button>
+            </>
           )}
           {selectedApartment && (
             <Button onClick={() => { blockForm.reset(); blockModal.openCreate(); }} variant="secondary" leftIcon={<Building2 className="h-4 w-4" />}>
@@ -409,7 +449,6 @@ export default function ApartmentsPage() {
             <Input label="Daire No" {...flatForm.register('flatNumber')} error={flatForm.formState.errors.flatNumber?.message} />
             <Input label="Kat" type="number" {...flatForm.register('floor', { valueAsNumber: true })} error={flatForm.formState.errors.floor?.message} />
           </div>
-          <Input label="m²" type="number" {...flatForm.register('squareMeters', { valueAsNumber: true })} error={flatForm.formState.errors.squareMeters?.message} />
           <div className="grid grid-cols-2 gap-4">
             <Select label="Tip" options={[...FLAT_TYPES]} {...flatForm.register('type')} error={flatForm.formState.errors.type?.message} />
             <Select label="Durum" options={[...OCCUPANCY_STATUSES]} {...flatForm.register('occupancyStatus')} error={flatForm.formState.errors.occupancyStatus?.message} />
@@ -419,6 +458,47 @@ export default function ApartmentsPage() {
             <Button type="submit">{flatModal.isEditing ? 'Güncelle' : 'Kaydet'}</Button>
           </div>
         </form>
+      </Modal>
+
+      {/* Quick Add Flats Modal */}
+      <Modal isOpen={quickAddOpen} onClose={() => setQuickAddOpen(false)} title="Hızlı Daire Oluştur">
+        <div className="space-y-4">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Kat ve daire sayısını belirleyin, daireler otomatik numaralandırılacak.
+            <br />
+            <span className="text-xs text-gray-400">Örnek: 3. kat, katta 4 daire → 301, 302, 303, 304</span>
+          </p>
+          <Input
+            label="Kat Sayısı"
+            type="number"
+            min={1}
+            max={50}
+            value={quickAddFloors}
+            onChange={(e) => setQuickAddFloors(Number(e.target.value))}
+          />
+          <Input
+            label="Her Katta Daire Sayısı"
+            type="number"
+            min={1}
+            max={20}
+            value={quickAddFlatsPerFloor}
+            onChange={(e) => setQuickAddFlatsPerFloor(Number(e.target.value))}
+          />
+          <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 text-sm text-gray-600 dark:text-gray-400">
+            <p><strong>Toplam:</strong> {quickAddFloors * quickAddFlatsPerFloor} daire</p>
+            <p><strong>Numaralama:</strong> 101-{quickAddFloors * 100 + quickAddFlatsPerFloor}</p>
+          </div>
+          <div className="flex justify-end gap-3 pt-4">
+            <Button type="button" variant="secondary" onClick={() => setQuickAddOpen(false)}>İptal</Button>
+            <Button
+              onClick={handleQuickAddFlats}
+              isLoading={quickAddIsCreating}
+              leftIcon={<Zap className="h-4 w-4" />}
+            >
+              {quickAddFloors * quickAddFlatsPerFloor} Daire Oluştur
+            </Button>
+          </div>
+        </div>
       </Modal>
 
       {/* Delete Confirm */}

@@ -35,6 +35,9 @@ export default function DuesPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
 
   const bulkModal = useModal();
+  const [bulkMonthStart, setBulkMonthStart] = useState(new Date().getMonth() + 1);
+  const [bulkMonthEnd, setBulkMonthEnd] = useState(new Date().getMonth() + 1);
+  const [bulkIsCreating, setBulkIsCreating] = useState(false);
 
   const bulkForm = useForm<BulkDueFormData>({
     resolver: zodResolver(bulkDueSchema),
@@ -93,14 +96,21 @@ export default function DuesPage() {
 
   const handleBulkCreate = async (data: BulkDueFormData) => {
     if (!admin) return;
+    setBulkIsCreating(true);
     try {
-      const ids = await dueService.bulkCreate(data, admin.id);
-      toast.success(`${ids.length} aidat oluşturuldu`);
+      let totalCreated = 0;
+      for (let m = bulkMonthStart; m <= bulkMonthEnd; m++) {
+        const ids = await dueService.bulkCreate({ ...data, month: m }, admin.id);
+        totalCreated += ids.length;
+      }
+      toast.success(`${totalCreated} aidat oluşturuldu`);
       bulkModal.close();
       bulkForm.reset();
       fetchDues();
     } catch {
       toast.error('Toplu aidat oluşturma başarısız');
+    } finally {
+      setBulkIsCreating(false);
     }
   };
 
@@ -593,11 +603,26 @@ export default function DuesPage() {
             placeholder="Tüm Bloklar"
             {...bulkForm.register('blockId')}
           />
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <Select
-              label="Ay"
+              label="Başlangıç Ayı"
               options={MONTHS.map((m) => ({ value: m.value, label: m.label }))}
-              {...bulkForm.register('month', { valueAsNumber: true })}
+              value={bulkMonthStart}
+              onChange={(e) => {
+                const v = Number(e.target.value);
+                setBulkMonthStart(v);
+                bulkForm.setValue('month', v);
+                if (v > bulkMonthEnd) setBulkMonthEnd(v);
+              }}
+            />
+            <Select
+              label="Bitiş Ayı"
+              options={MONTHS.filter((m) => m.value >= bulkMonthStart).map((m) => ({
+                value: m.value,
+                label: m.label,
+              }))}
+              value={bulkMonthEnd}
+              onChange={(e) => setBulkMonthEnd(Number(e.target.value))}
             />
             <Input
               label="Yıl"
@@ -605,6 +630,11 @@ export default function DuesPage() {
               {...bulkForm.register('year', { valueAsNumber: true })}
             />
           </div>
+          {bulkMonthEnd > bulkMonthStart && (
+            <div className="bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 text-sm rounded-lg p-3">
+              {bulkMonthEnd - bulkMonthStart + 1} ay için aidat oluşturulacak
+            </div>
+          )}
           <Input
             label="Aidat Tutarı (TL)"
             type="number"
@@ -617,7 +647,7 @@ export default function DuesPage() {
             <Button type="button" variant="secondary" onClick={bulkModal.close}>
               İptal
             </Button>
-            <Button type="submit">Oluştur</Button>
+            <Button type="submit" isLoading={bulkIsCreating}>Oluştur</Button>
           </div>
         </form>
       </Modal>

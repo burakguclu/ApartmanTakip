@@ -32,7 +32,6 @@ export interface Flat {
   blockId: string;
   flatNumber: string;
   floor: number;
-  squareMeters: number;
   type: FlatType;
   ownerId: string | null;
   tenantId: string | null;
@@ -122,6 +121,25 @@ export interface Payment {
 }
 
 export type PaymentMethod = 'cash' | 'bank-transfer' | 'credit-card' | 'check' | 'other';
+
+// ==========================================
+// Income Types
+// ==========================================
+export interface Income {
+  id: string;
+  apartmentId: string;
+  category: IncomeCategory;
+  amount: number;
+  description: string;
+  incomeDate: string;
+  payer: string;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  isDeleted: boolean;
+}
+
+export type IncomeCategory = 'rent' | 'parking' | 'advertising' | 'event' | 'interest' | 'other';
 
 // ==========================================
 // Expense Types
