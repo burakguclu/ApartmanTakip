@@ -78,6 +78,16 @@ export default function ReportsPage() {
     value,
   }));
 
+  // Income breakdown by category
+  const incomeCategoryMap = new Map<string, number>();
+  yearIncomes.forEach((i) => {
+    incomeCategoryMap.set(i.category, (incomeCategoryMap.get(i.category) || 0) + i.amount);
+  });
+  const incomeCategoryData = Array.from(incomeCategoryMap.entries()).map(([name, value]) => ({
+    name: getStatusLabel(name),
+    value,
+  }));
+
   // Collection rate
   const totalDueAmount = yearDues.reduce((sum, d) => sum + d.amount, 0);
   const totalPaidAmount = yearDues.reduce((sum, d) => sum + d.paidAmount, 0);
@@ -102,9 +112,9 @@ export default function ReportsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Raporlar & Analiz</h1>
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Raporlar & Analiz</h1>
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <Select options={years} value={year} onChange={(e) => setYear(Number(e.target.value))} />
           <Button variant="secondary" onClick={handleExportPDF} leftIcon={<FileText className="h-4 w-4" />}>
             PDF
@@ -116,7 +126,7 @@ export default function ReportsPage() {
       </div>
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard title="Toplam Gelir" value={formatCurrency(totalIncome)} icon={<TrendingUp className="h-6 w-6 text-success-600" />} />
         <StatCard title="Toplam Gider" value={formatCurrency(totalExpense)} icon={<TrendingDown className="h-6 w-6 text-danger-600" />} />
         <StatCard title="Net Bakiye" value={formatCurrency(netBalance)} icon={<DollarSign className="h-6 w-6 text-primary-600" />} />
@@ -167,6 +177,26 @@ export default function ReportsPage() {
                 <Pie data={categoryData} cx="50%" cy="50%" outerRadius={100} dataKey="value" label>
                   {categoryData.map((_, i) => (
                     <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(val) => formatCurrency(Number(val))} />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex items-center justify-center h-[300px] text-gray-400">Veri yok</div>
+          )}
+        </Card>
+
+        {/* Income Category Pie */}
+        <Card>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Gelir Dağılımı</h2>
+          {incomeCategoryData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie data={incomeCategoryData} cx="50%" cy="50%" outerRadius={100} dataKey="value" label>
+                  {incomeCategoryData.map((_, i) => (
+                    <Cell key={i} fill={COLORS[(i + 2) % COLORS.length]} />
                   ))}
                 </Pie>
                 <Tooltip formatter={(val) => formatCurrency(Number(val))} />

@@ -17,9 +17,9 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { apartmentService } from '@/services/apartmentService';
 import { residentService } from '@/services/residentService';
 import { dueService } from '@/services/dueService';
-import { paymentService } from '@/services/paymentService';
+import { incomeService } from '@/services/incomeService';
 import { expenseService } from '@/services/expenseService';
-import type { Due, Payment, Expense } from '@/types';
+import type { Due, Income, Expense } from '@/types';
 
 const CHART_COLORS = ['#3b82f6', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#f97316'];
 
@@ -41,16 +41,16 @@ export default function DashboardPage() {
   useEffect(() => {
     async function fetchDashboard() {
       try {
-        const [apartments, residents, dues, payments, expenses] = await Promise.all([
+        const [apartments, residents, dues, incomes, expenses] = await Promise.all([
           apartmentService.getAll(),
           residentService.getActive(),
           dueService.getAll(),
-          paymentService.getAll(),
+          incomeService.getAll(),
           expenseService.getAll(),
         ]);
 
         const overdueDues = dues.filter((d: Due) => d.status === 'overdue');
-        const totalIncome = payments.reduce((sum: number, p: Payment) => sum + p.amount, 0);
+        const totalIncome = incomes.reduce((sum: number, i: Income) => sum + i.amount, 0);
         const totalExpense = expenses.reduce((sum: number, e: Expense) => sum + e.amount, 0);
 
         setStats({
@@ -68,8 +68,8 @@ export default function DashboardPage() {
         const monthNames = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
         const currentYear = new Date().getFullYear();
         const monthly = monthNames.map((month, idx) => {
-          const monthPayments = payments.filter((p: Payment) => {
-            const d = new Date(p.paymentDate);
+          const monthIncomes = incomes.filter((i: Income) => {
+            const d = new Date(i.incomeDate);
             return d.getMonth() === idx && d.getFullYear() === currentYear;
           });
           const monthExpenses = expenses.filter((e: Expense) => {
@@ -78,7 +78,7 @@ export default function DashboardPage() {
           });
           return {
             month,
-            gelir: monthPayments.reduce((sum: number, p: Payment) => sum + p.amount, 0),
+            gelir: monthIncomes.reduce((sum: number, i: Income) => sum + i.amount, 0),
             gider: monthExpenses.reduce((sum: number, e: Expense) => sum + e.amount, 0),
           };
         });

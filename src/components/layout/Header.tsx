@@ -1,10 +1,14 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import { Sun, Moon, LogOut, Bell, User } from 'lucide-react';
+import { Sun, Moon, LogOut, Bell, User, Menu } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { notificationService } from '@/services/notificationService';
 
-export default function Header() {
+interface HeaderProps {
+  onMenuToggle: () => void;
+}
+
+export default function Header({ onMenuToggle }: HeaderProps) {
   const { admin, logout } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const [unreadCount, setUnreadCount] = useState(0);
@@ -24,9 +28,15 @@ export default function Header() {
   }, []);
 
   return (
-    <header className="h-16 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between px-6 sticky top-0 z-30">
-      <div>
-        <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
+    <header className="h-16 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between px-3 sm:px-6 sticky top-0 z-30">
+      <div className="flex items-center gap-3">
+        <button
+          onClick={onMenuToggle}
+          className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors lg:hidden"
+        >
+          <Menu className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+        </button>
+        <h1 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white truncate">
           Apartman Yönetim Sistemi
         </h1>
       </div>

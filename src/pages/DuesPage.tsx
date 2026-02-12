@@ -275,8 +275,8 @@ export default function DuesPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Aidat Yönetimi</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Aidat Yönetimi</h1>
         <div className="flex gap-2">
           <Button
             variant="secondary"
@@ -415,10 +415,10 @@ export default function DuesPage() {
       {viewMode === 'grid' ? (
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+            <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
               Daire Ödeme Durumu — {getMonthName(filterMonth)} {filterYear}
             </h2>
-            <div className="flex gap-3 text-xs text-gray-600 dark:text-gray-400">
+            <div className="hidden sm:flex gap-3 text-xs text-gray-600 dark:text-gray-400">
               <span className="flex items-center gap-1">
                 <span className="w-3 h-3 rounded-full bg-emerald-400" /> Ödendi
               </span>
