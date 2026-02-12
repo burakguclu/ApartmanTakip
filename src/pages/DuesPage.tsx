@@ -56,15 +56,15 @@ export default function DuesPage() {
   const bulkSelectedApartmentId = bulkForm.watch('apartmentId');
   const [bulkBlocks, setBulkBlocks] = useState<Block[]>([]);
 
-  const fetchDues = useCallback(async () => {
-    setIsLoading(true);
+  const fetchDues = useCallback(async (silent = false) => {
+    if (!silent) setIsLoading(true);
     try {
       const data = await dueService.getAll();
       setDues(data);
     } catch {
       toast.error('Aidatlar yüklenemedi');
     } finally {
-      setIsLoading(false);
+      if (!silent) setIsLoading(false);
     }
   }, []);
 
@@ -111,7 +111,7 @@ export default function DuesPage() {
       toast.success(`${totalCreated} aidat oluşturuldu`);
       bulkModal.close();
       bulkForm.reset();
-      fetchDues();
+      fetchDues(true);
     } catch {
       toast.error('Toplu aidat oluşturma başarısız');
     } finally {
@@ -148,7 +148,7 @@ export default function DuesPage() {
       }
 
       toast.success('Aidat ödendi olarak işaretlendi');
-      fetchDues();
+      fetchDues(true);
     } catch {
       toast.error('İşlem başarısız');
     }
@@ -166,7 +166,7 @@ export default function DuesPage() {
       }
 
       toast.success('Aidat ödenmemiş olarak geri alındı');
-      fetchDues();
+      fetchDues(true);
     } catch {
       toast.error('İşlem başarısız');
     }
@@ -178,7 +178,7 @@ export default function DuesPage() {
       const count = await dueService.applyLateFees(admin.id);
       if (count > 0) {
         toast.success(`${count} aidata gecikme faizi uygulandı`);
-        fetchDues();
+        fetchDues(true);
       } else {
         toast.success('Gecikmiş aidat bulunamadı');
       }
