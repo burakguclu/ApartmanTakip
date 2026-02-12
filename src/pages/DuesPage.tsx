@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { dueService } from '@/services/dueService';
+import { incomeService } from '@/services/incomeService';
 import { apartmentService, blockService, flatService } from '@/services/apartmentService';
 import type { Due, Apartment, Block, Flat } from '@/types';
 import { useModal } from '@/hooks/useCommon';
@@ -117,7 +118,26 @@ export default function DuesPage() {
   const handleMarkPaid = async (dueId: string) => {
     if (!admin) return;
     try {
+      const due = dues.find((d) => d.id === dueId);
       await dueService.markAsPaid(dueId, admin.id);
+
+      // Gelir kaydı oluştur
+      if (due) {
+        const flat = flats.find((f) => f.id === due.flatId);
+        const totalPaid = due.amount + due.lateFee;
+        await incomeService.create(
+          {
+            apartmentId: due.apartmentId,
+            category: 'dues',
+            amount: totalPaid,
+            description: `Daire ${flat?.flatNumber ?? '?'} - ${getMonthName(due.month)} ${due.year} aidatı`,
+            payer: flat?.flatNumber ? `Daire ${flat.flatNumber}` : '',
+            incomeDate: new Date().toISOString().split('T')[0],
+          },
+          admin.id
+        );
+      }
+
       toast.success('Aidat ödendi olarak işaretlendi');
       fetchDues();
     } catch {
