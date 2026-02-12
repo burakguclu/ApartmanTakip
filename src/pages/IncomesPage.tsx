@@ -28,6 +28,7 @@ export default function IncomesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [filterCategory, setFilterCategory] = useState('all');
+  const [filterApartmentId, setFilterApartmentId] = useState('all');
 
   const modal = useModal();
   const { searchTerm, handleSearch } = useSearch();
@@ -101,6 +102,7 @@ export default function IncomesPage() {
   };
 
   const filtered = incomes.filter((i) => {
+    if (filterApartmentId !== 'all' && i.apartmentId !== filterApartmentId) return false;
     if (filterCategory !== 'all' && i.category !== filterCategory) return false;
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
@@ -115,6 +117,10 @@ export default function IncomesPage() {
   const totalAmount = filtered.reduce((sum, i) => sum + i.amount, 0);
 
   const columns: ColumnDef<Income>[] = [
+    { key: 'apartment', title: 'Apartman', render: (i) => {
+      const apt = apartments.find((a) => a.id === i.apartmentId);
+      return <span className="font-medium">{apt?.name ?? '-'}</span>;
+    }},
     { key: 'date', title: 'Tarih', render: (i) => formatDate(i.incomeDate) },
     { key: 'category', title: 'Kategori', render: (i) => <Badge status={i.category} /> },
     {
@@ -162,7 +168,7 @@ export default function IncomesPage() {
               category: 'dues',
               payer: '',
               description: '',
-              apartmentId: '',
+              apartmentId: filterApartmentId !== 'all' ? filterApartmentId : '',
               amount: 0,
               incomeDate: new Date().toISOString().split('T')[0],
             });
@@ -189,6 +195,14 @@ export default function IncomesPage() {
 
       {/* Filters */}
       <div className="flex flex-wrap gap-4">
+        <Select
+          options={[
+            { value: 'all', label: 'Tüm Apartmanlar' },
+            ...apartments.map((a) => ({ value: a.id, label: a.name })),
+          ]}
+          value={filterApartmentId}
+          onChange={(e) => setFilterApartmentId(e.target.value)}
+        />
         <Select
           options={[
             { value: 'all', label: 'Tüm Kategoriler' },
