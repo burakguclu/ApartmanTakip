@@ -6,7 +6,7 @@ import {
   getDocument,
   getDocumentsByField,
 } from './firestoreService';
-import { where } from 'firebase/firestore';
+import { where, orderBy } from 'firebase/firestore';
 import { COLLECTIONS } from '@/utils/constants';
 import type { Income } from '@/types';
 import type { IncomeFormData } from '@/utils/validations';
@@ -55,7 +55,7 @@ export const incomeService = {
   },
 
   async getAll(): Promise<Income[]> {
-    return getDocuments<Income>(COLLECTIONS.INCOMES);
+    return getDocuments<Income>(COLLECTIONS.INCOMES, [orderBy('incomeDate', 'desc')]);
   },
 
   async getByApartment(apartmentId: string): Promise<Income[]> {
@@ -66,6 +66,7 @@ export const incomeService = {
     return getDocuments<Income>(COLLECTIONS.INCOMES, [
       where('incomeDate', '>=', startDate),
       where('incomeDate', '<=', endDate),
+      orderBy('incomeDate', 'desc'),
     ]);
   },
 

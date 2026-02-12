@@ -160,6 +160,14 @@
       "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "isDeleted", "order": "ASCENDING" },
+        { "fieldPath": "incomeDate", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "incomes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "isDeleted", "order": "ASCENDING" },
         { "fieldPath": "incomeDate", "order": "ASCENDING" }
       ]
     }
