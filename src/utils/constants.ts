@@ -64,10 +64,10 @@ export const MONTHS = [
 ] as const;
 
 export const INCOME_CATEGORIES = [
-  { value: 'rent', label: 'Kira Geliri' },
-  { value: 'parking', label: 'Otopark' },
-  { value: 'advertising', label: 'Reklam Geliri' },
-  { value: 'event', label: 'Etkinlik Geliri' },
+  { value: 'dues', label: 'Aidat Tahsilatı' },
+  { value: 'commonArea', label: 'Ortak Alan Geliri' },
+  { value: 'parking', label: 'Otopark Geliri' },
+  { value: 'penalty', label: 'Gecikme Cezası' },
   { value: 'interest', label: 'Faiz Geliri' },
   { value: 'other', label: 'Diğer' },
 ] as const;

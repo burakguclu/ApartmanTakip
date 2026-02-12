@@ -139,7 +139,7 @@ export interface Income {
   isDeleted: boolean;
 }
 
-export type IncomeCategory = 'rent' | 'parking' | 'advertising' | 'event' | 'interest' | 'other';
+export type IncomeCategory = 'dues' | 'commonArea' | 'parking' | 'penalty' | 'interest' | 'other';
 
 // ==========================================
 // Expense Types

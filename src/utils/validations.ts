@@ -94,7 +94,7 @@ export type BulkDueFormData = z.infer<typeof bulkDueSchema>;
 // ==========================================
 export const incomeSchema = z.object({
   apartmentId: z.string().min(1, 'Apartman seçin'),
-  category: z.enum(['rent', 'parking', 'advertising', 'event', 'interest', 'other']),
+  category: z.enum(['dues', 'commonArea', 'parking', 'penalty', 'interest', 'other']),
   amount: z.number().min(0.01, 'Tutar 0\'dan büyük olmalıdır'),
   description: z.string().min(3, 'Açıklama en az 3 karakter olmalıdır'),
   payer: z.string(),

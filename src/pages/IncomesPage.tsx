@@ -34,7 +34,7 @@ export default function IncomesPage() {
 
   const form = useForm<IncomeFormData>({
     resolver: zodResolver(incomeSchema),
-    defaultValues: { category: 'other', payer: '', description: '' },
+    defaultValues: { category: 'dues', payer: '', description: '' },
   });
 
   const fetchIncomes = useCallback(async () => {
@@ -159,7 +159,7 @@ export default function IncomesPage() {
         <Button
           onClick={() => {
             form.reset({
-              category: 'other',
+              category: 'dues',
               payer: '',
               description: '',
               apartmentId: '',
@@ -180,7 +180,7 @@ export default function IncomesPage() {
           <TrendingUp className="h-5 w-5 text-emerald-600" />
         </div>
         <div>
-          <p className="text-sm text-gray-500">Toplam Harici Gelir</p>
+          <p className="text-sm text-gray-500">Toplam Gelir</p>
           <p className="text-xl font-bold text-emerald-700 dark:text-emerald-400">
             {formatCurrency(totalAmount)}
           </p>
